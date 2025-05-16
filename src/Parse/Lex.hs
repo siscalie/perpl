@@ -138,8 +138,9 @@ lexNum s = case reads s :: [(Double, String)] of
   [] -> lexKeywordOrVar s -- Case 1: unable to be read as a double
   [(d, rest)] -> if d < 0 then \ p _ -> Left (p, "Negative number detected")
                  else case reads s :: [(Int, String)] of
-                  [] -> lexAdd (take (length s - length rest) s) rest (TkDouble d) -- Case 2a: able to be read as a double, not as an int
-                  [(n, rest')] -> lexAdd (take (length s - length rest) s) rest (TkNat n) -- Case 2b: able to be read as a double and an int (so treat as int)
+                  [] -> if d == fromInteger (round d) then lexAdd (take (length s - length rest) s) rest (TkNat (round d)) -- Special Case: double and int but not caught by reads (ex: 2.000)
+                        else lexAdd (take (length s - length rest) s) rest (TkDouble d) -- Case 2a: double, not int
+                  [(n, rest')] -> lexAdd (take (length s - length rest) s) rest (TkNat n) -- Case 2b: double and int (so treat as int)
 
 -- Consumes characters until a non-variable character is reached
 lexVar :: String -> (String, String)
