@@ -4,6 +4,7 @@ import System.Console.GetOpt ( OptDescr(..), ArgDescr(ReqArg, NoArg), ArgOrder(P
 import System.Exit (die, exitSuccess)
 import System.Environment (getArgs, getProgName)
 import System.IO (hPutStr, hPutStrLn, stdout, stderr, openFile, IOMode(..), hGetContents, hFlush)
+import Data.List ( uncons )
 import Struct.Lib (TpName(TpN), Progs, progBuiltins)
 import Parse.Lib (parse)
 import TypeInf.Lib (infer)
@@ -92,18 +93,16 @@ processArgs :: [String] -> Either String CmdArgs
 processArgs argv =
   case getOpt Permute options argv of -- Evaluating option args, list of input strings, and list of error messages
     (o, [], errs) -> -- Case 1: No Input Files Given
-      Left (let safeHead errors = if null errors then Nothing else Just (head errors) in
-            case safeHead errs of -- safer head function for handling errs
-              Just e -> e
-              Nothing -> "No input file given (enter option flags and an input file)\n")
+      Left (case uncons errs of
+        Nothing -> "No input file given (enter option flags and an input file)\n"
+        Just (x, xs) -> x)
     (o, [n], []) -> -- Case 2: Correct Usage
       let opts' = optionsDefault n in
       foldM (flip id) opts' o
     (_, _, errs) -> -- Case 3: Too Many Input Files Given
-      Left (let safeHead errors = if null errors then Nothing else Just (head errors) in
-            case safeHead errs of -- safer head function for handling errs
-              Just e -> e
-              Nothing -> "Too many input files given (enter option flags and an input file)\n")
+      Left (case uncons errs of
+        Nothing -> "Too many input files given (enter option flags and an input file)\n"
+        Just (x, xs) -> x)
 
 putStrLnErr :: String -> IO ()
 putStrLnErr = hPutStrLn stderr
