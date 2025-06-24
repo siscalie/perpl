@@ -191,12 +191,12 @@ tmFalse = TmVarG GlCtor tmFalseName [] [] [] tpBool
 -- add should be hidden, like if a user makes a function called add the computer shouldnt freak out and be like theres already an add function
 -- like hide ours (+) or we could call it _Add
 -- maybe do that then we coudl use it like (+) 3 4  and then syntactic sugar can do 3 + 4
-tpAddName :: TpName
-tpAddName = TpN "_Add"
+
 tmAddName :: TmName
 tmAddName = TmN "_Add"
+-- recall TpArr Type Type -- function tp1 -> tp2
 tpAdd :: Type
-tpAdd = TpData tpAddName [] []
+tpAdd = TpArr tpNat tpNat
 
 tpNatName :: TpName
 tpNatName = TpN "Nat"
@@ -207,18 +207,17 @@ tmSuccName = TmN "Succ"
 tpNat :: Type
 tpNat = TpData tpNatName [] []
 
--- sumVals function for _Add: takes in an UsApp of two natural numbers, returns a natural number
-sumVals :: UsTm -> UsTm
-sumVals (UsApp x1 x2) = case x1 of
-  (UsVar (TmV "Zero")) -> x2
-  (UsApp (UsVar (TmV "Succ")) x') -> UsApp (UsVar (TmV "Succ")) (sumVals (UsApp x' x2))
+addition :: UsTm -> UsTm -> UsTm
+addition m n = UsLam (TmV "m") tpNat
+          (UsLam (TmV "n") tpNat (UsCase (UsVar (TmV "m")) [CaseUs (TmN "Zero") [] (UsVar (TmV "n")),
+                                                            CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (addition (UsVar (TmV "m'")) (UsVar (TmV "n"))))]))
 
 builtins :: [UsProg]
 builtins = [
   UsProgData tpZeroName [] [],
   UsProgData tpBoolName [] [Ctor tmFalseName [], Ctor tmTrueName []],
   UsProgData tpNatName [] [Ctor tmZeroName [], Ctor tmSuccName [tpNat]],
-  UsProgDefine tmAddName (sumVals val) tpAdd -- error: val is not defined (how to capture & refer to the input for this new built-in function?)
+  UsProgDefine tmAddName (addition x y) (TpArr tpNat tpAdd) -- aka function tpNat -> (tpNat -> tpNat)
   -- aka UsProgDefine lhs, rhs, type
   -- aka UsProgDefine x term type oftentimes when it's called in other files
   -- UsProgDefine TmName UsTm Type in its definition

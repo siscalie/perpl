@@ -237,7 +237,6 @@ TERM3 ::=
 
 -}
 
-
 parseTerm3 :: ParseM UsTm
 parseTerm3 = parseTerm4 >>= \ tm ->
   parsePeek >>= \ t -> case t of
@@ -277,8 +276,8 @@ parseTerm4p :: ParseM UsTm
 parseTerm4p = parseTerm5 >>= \ tm1 ->
   parsePeek >>= \ t -> case t of
     -- if see +, eat its token, parse the second term, then sum it with the first term and return that sum as a ParseM UsTm
-    TkAdd -> parseEat *> parseTerm4p >>= \ tm2 -> pure (UsApp tm1 tm2)
-    -- else mosey over to parseTermApp
+    TkAdd -> parseEat *> parseTerm4p >>= \ tm2 -> pure (UsApp (UsApp (UsVar (tmNameToVar tmAddName)) tm1) tm2) -- aka UsApp (UsApp tmAddName tm1) tm2
+    -- aka apply add to tm1, then, whatever that gives you, apply that to tm2
     _ -> parseTermApp tm1
 
 -- Parse an application spine
