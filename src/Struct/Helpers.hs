@@ -208,7 +208,7 @@ tpNat :: Type
 tpNat = TpData tpNatName [] []
 
 addition :: UsTm -> UsTm -> UsTm
-addition m n = UsLam (TmV "m") tpNat
+addition val1 val2 = UsLam (TmV "m") tpNat
           (UsLam (TmV "n") tpNat (UsCase (UsVar (TmV "m")) [CaseUs (TmN "Zero") [] (UsVar (TmV "n")),
                                                             CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (addition (UsVar (TmV "m'")) (UsVar (TmV "n"))))]))
 
@@ -217,10 +217,7 @@ builtins = [
   UsProgData tpZeroName [] [],
   UsProgData tpBoolName [] [Ctor tmFalseName [], Ctor tmTrueName []],
   UsProgData tpNatName [] [Ctor tmZeroName [], Ctor tmSuccName [tpNat]],
-  UsProgDefine tmAddName (addition x y) (TpArr tpNat tpAdd) -- aka function tpNat -> (tpNat -> tpNat)
-  -- aka UsProgDefine lhs, rhs, type
-  -- aka UsProgDefine x term type oftentimes when it's called in other files
-  -- UsProgDefine TmName UsTm Type in its definition
+  UsProgDefine tmAddName (addition (UsVar (TmV "m")) (UsVar (TmV "n"))) (TpArr tpNat tpAdd) -- aka function tpNat -> (tpNat -> tpNat)
   ]
 
 progBuiltins :: UsProgs -> UsProgs
