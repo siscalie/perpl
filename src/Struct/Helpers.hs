@@ -208,9 +208,10 @@ tpNat :: Type
 tpNat = TpData tpNatName [] []
 
 addition :: UsTm -> UsTm -> UsTm
-addition val1 val2 = UsLam (TmV "m") tpNat
-          (UsLam (TmV "n") tpNat (UsCase (UsVar (TmV "m")) [CaseUs (TmN "Zero") [] (UsVar (TmV "n")),
-                                                            CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (addition (UsVar (TmV "m'")) (UsVar (TmV "n"))))]))
+addition (UsVar val1) (UsVar val2) = UsLam val1 tpNat
+  (UsLam val2 tpNat (UsCase (UsVar val1) [CaseUs (TmN "Zero") [] (UsVar val2),
+                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (addition (UsVar (TmV "m'")) (UsVar val2)))]))
+addition _ _ = UsFail NoTp
 
 builtins :: [UsProg]
 builtins = [
