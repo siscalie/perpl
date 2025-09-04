@@ -155,7 +155,13 @@ parseNat :: ParseM Int
 parseNat = parsePeek >>= \ t -> case t of
   TkNat n -> parseEat >> return n
   _ -> parseErr "Expected a natural number here"
-  
+
+-- Parses a rational number
+parseRatio :: ParseM Rational
+parseRatio = parsePeek >>= \ t -> case t of
+  TkRatio r -> parseEat >> return r
+  _ -> parseErr "Expected a rational number here"
+
 {-
 
 TERM1 ::=
@@ -207,6 +213,7 @@ parseTerm1 = parsePeeks 2 >>= \ t1t2 -> case t1t2 of
 -- factor wt
   [TkFactor, TkDouble x] -> parseEat *> pure UsFactorDouble <*> parseDouble <* parseDrop TkIn <*> parseTerm1
   [TkFactor, TkNat x] -> parseEat *> pure UsFactorNat <*> parseNat <* parseDrop TkIn <*> parseTerm1
+  [TkFactor, TkRatio x] -> parseEat *> pure UsFactorRatio <*> parseRatio <* parseDrop TkIn <*> parseTerm1
   _ -> parseTerm2
 
 
@@ -303,13 +310,6 @@ unpackNat :: Int -> UsTm
 unpackNat k =
   if k > 0 then (UsApp (UsVar (TmV "Succ")) (unpackNat (k-1)))
   else (UsVar (TmV "Zero"))
-
--- Add two (constant) natural numbers together
-natAdd :: Int -> Int -> UsTm
-natAdd x y
-  | x > 0 = (UsApp (UsVar (TmV "Succ")) (natAdd (x-1) y))
-  | y > 0 = (UsApp (UsVar (TmV "Succ")) (natAdd x (y-1)))
-  | otherwise = UsVar (TmV "Zero")
 
 {- Type Annotation
 

@@ -20,6 +20,7 @@ toUsTm (TmAmb [] tp) = UsFail tp
 toUsTm (TmAmb tms tp) = UsAmb [toUsTm tm | tm <- tms]
 toUsTm (TmFactorDouble wt tm tp) = UsFactorDouble wt (toUsTm tm)
 toUsTm (TmFactorNat wt tm tp) = UsFactorNat wt (toUsTm tm)
+toUsTm (TmFactorRatio wt tm tp) = UsFactorRatio wt (toUsTm tm)
 toUsTm (TmProd am as) = UsProd am [toUsTm tm | (tm, _) <- as]
 toUsTm (TmElimMultiplicative tm ps    tm' tp) = UsElimMultiplicative (toUsTm tm) (fsts ps)   (toUsTm tm')
 toUsTm (TmElimAdditive       tm n i p tm' tp) = UsElimAdditive       (toUsTm tm) n i (fst p) (toUsTm tm')
@@ -77,6 +78,7 @@ instance Show UsTm where
   showsPrec p (UsElimAdditive       tm n i x tm') = showsPrecElim p Additive tm [ if i==j then shows x else showString "_" | j <- [0..n-1] ] tm'
   showsPrec p (UsFactorDouble wt tm) = showParen (p > 1) (showString "factor " . shows wt . showString " in " . showsPrec (if p == 1 then 1 else 0) tm)
   showsPrec p (UsFactorNat wt tm) = showParen (p > 1) (showString "factor " . shows wt . showString " in " . showsPrec (if p == 1 then 1 else 0) tm)
+  showsPrec p (UsFactorRatio wt tm) = showParen (p > 1) (showString "factor " . shows wt . showString " in " . showsPrec (if p == 1 then 1 else 0) tm)
   showsPrec p (UsIf tm1 tm2 tm3) = showParen (p > 1) (showString "if " . shows tm1 . showString " then " . shows tm2 . showString " else " . showsPrec (if p == 1 then 1 else 0) tm3)
   showsPrec p (UsCase tm cs) = showParen (p > 0) (showString "case " . shows tm . showString " of " . delimitWith " | " (map (showsPrec 1) cs))
   showsPrec p (UsAmb tms) = showParen (p > 9) (delimitWith " " (showString "amb" : map (showsPrec 11) tms))

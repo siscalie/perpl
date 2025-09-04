@@ -14,6 +14,7 @@ typeof (TmCase ctm y cs tp) = tp
 typeof (TmAmb tms tp) = tp
 typeof (TmFactorDouble wt tm tp) = tp
 typeof (TmFactorNat wt tm tp) = tp
+typeof (TmFactorRatio wt tm tp) = tp
 typeof (TmProd am as) = TpProd am (snds as)
 typeof (TmElimMultiplicative tm ps    tm' tp) = tp
 typeof (TmElimAdditive       tm n i p tm' tp) = tp

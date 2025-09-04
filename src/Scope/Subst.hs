@@ -229,6 +229,8 @@ instance Substitutable Term where
     pure TmFactorDouble <*> pure wt <*> substM tm <*> substM tp
   substM (TmFactorNat wt tm tp) =
     pure TmFactorNat <*> pure wt <*> substM tm <*> substM tp
+  substM (TmFactorRatio wt tm tp) =
+    pure TmFactorRatio <*> pure wt <*> substM tm <*> substM tp
   substM (TmProd am as) =
     pure (TmProd am) <*> mapArgsM substM as
   substM (TmElimAdditive ptm n i p tm tp) =
@@ -247,6 +249,7 @@ instance Substitutable Term where
   freeVars (TmAmb tms tp) = freeVars tms
   freeVars (TmFactorDouble wt tm tp) = freeVars tm
   freeVars (TmFactorNat wt tm tp) = freeVars tm
+  freeVars (TmFactorRatio wt tm tp) = freeVars tm
   freeVars (TmProd am as) = freeVars (fsts as)
   freeVars (TmElimAdditive ptm n i p tm tp) = freeVars ptm <> let fv = freeVars tm in fv{freeTmVars = Map.delete (fst p) (freeTmVars fv)}
   freeVars (TmElimMultiplicative ptm ps tm tp) = freeVars ptm <> let fv = freeVars tm in fv{freeTmVars = foldr (Map.delete . fst) (freeTmVars fv) ps}
@@ -297,6 +300,8 @@ instance Substitutable UsTm where
     pure UsFactorDouble <*> pure wt <*> substM tm
   substM (UsFactorNat wt tm) =
     pure UsFactorNat <*> pure wt <*> substM tm
+  substM (UsFactorRatio wt tm) =
+    pure UsFactorRatio <*> pure wt <*> substM tm
   substM (UsFail tp) =
     pure UsFail <*> substM tp
   substM (UsProd am tms) =
@@ -331,6 +336,8 @@ instance Substitutable UsTm where
   freeVars (UsFactorDouble wt tm) =
     freeVars tm
   freeVars (UsFactorNat wt tm) =
+    freeVars tm
+  freeVars (UsFactorRatio wt tm) =
     freeVars tm
   freeVars (UsFail tp) =
     mempty
