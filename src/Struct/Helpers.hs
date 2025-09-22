@@ -4,6 +4,7 @@ module Struct.Helpers where
 import Struct.Exprs
 import Util.Helpers ( fsts, snds )
 import Data.List ( sortBy )
+import Debug.Trace ( trace )
 
 -- Gets the type of an elaborated term in O(1) time
 typeof :: Term -> Type
@@ -208,9 +209,10 @@ tpNat :: Type
 tpNat = TpData tpNatName [] []
 
 addition :: UsTm -> UsTm -> UsTm
-addition (UsVar val1) (UsVar val2) = UsLam val1 tpNat
+addition (UsVar val1) (UsVar val2) = trace "adding" UsLam val1 tpNat
   (UsLam val2 tpNat (UsCase (UsVar val1) [CaseUs (TmN "Zero") [] (UsVar val2),
-                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (addition (UsVar (TmV "m'")) (UsVar val2)))]))
+--                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (addition (UsVar (TmV "m'")) (UsVar val2)))]))
+                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (UsVar val2))]))
 addition _ _ = UsFail NoTp
 
 builtins :: [UsProg]
