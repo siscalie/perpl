@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use lambda-case" #-}
 module Struct.Helpers where
 import Struct.Exprs
 import Util.Helpers ( fsts, snds )
@@ -165,7 +167,9 @@ mapProgsM f (Progs ps end) =
 
 -- Built-in datatypes
 
+tpZeroName :: TpName
 tpZeroName = TpN "_Zero"
+tpZero :: Type
 tpZero = TpData tpZeroName [] []
 
 tmUnit = TmProd Multiplicative []
@@ -184,6 +188,17 @@ tmTrue = TmVarG GlCtor tmTrueName [] [] [] tpBool
 tmFalse :: Term
 tmFalse = TmVarG GlCtor tmFalseName [] [] [] tpBool
 
+-- this is how we hide stuff with the _,
+-- add should be hidden, like if a user makes a function called add the computer shouldnt freak out and be like theres already an add function
+-- like hide ours (+) or we could call it _Add
+-- maybe do that then we coudl use it like (+) 3 4  and then syntactic sugar can do 3 + 4
+
+tmAddName :: TmName
+tmAddName = TmN "_Add"
+-- recall TpArr Type Type -- function tp1 -> tp2
+tpAdd :: Type
+tpAdd = TpArr tpNat tpNat
+
 tpNatName :: TpName
 tpNatName = TpN "Nat"
 tmZeroName :: TmName
@@ -193,11 +208,18 @@ tmSuccName = TmN "Succ"
 tpNat :: Type
 tpNat = TpData tpNatName [] []
 
+additionGenerator :: UsTm -> UsTm -> UsTm
+additionGenerator (UsVar val1) (UsVar val2) = UsLam val1 tpNat
+  (UsLam val2 tpNat (UsCase (UsVar val1) [CaseUs (TmN "Zero") [] (UsVar val2),
+                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (UsApp (UsApp (UsVar (tmNameToVar tmAddName)) (UsVar (TmV "m'"))) (UsVar val2)))]))
+additionGenerator _ _ = UsFail NoTp
+
 builtins :: [UsProg]
 builtins = [
   UsProgData tpZeroName [] [],
   UsProgData tpBoolName [] [Ctor tmFalseName [], Ctor tmTrueName []],
-  UsProgData tpNatName [] [Ctor tmZeroName [], Ctor tmSuccName [tpNat]]
+  UsProgData tpNatName [] [Ctor tmZeroName [], Ctor tmSuccName [tpNat]],
+  UsProgDefine tmAddName (additionGenerator (UsVar (TmV "m")) (UsVar (TmV "n"))) (TpArr tpNat tpAdd)
   ]
 
 progBuiltins :: UsProgs -> UsProgs
@@ -209,4 +231,4 @@ joinUsLams :: [TmVar] -> UsTm -> UsTm
 joinUsLams xs tail =
   case xs of
     x:xs -> UsLam x NoTp (joinUsLams xs tail)
-    [] -> tail 
+    [] -> tail

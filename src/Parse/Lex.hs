@@ -1,4 +1,5 @@
 {- Lexer code -}
+{-# LANGUAGE InstanceSigs #-}
 
 module Parse.Lex (Token (..), keywords, Pos, lexFile) where
 import Data.Char (isAlpha, isDigit, isSpace)
