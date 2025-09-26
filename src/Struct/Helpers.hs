@@ -4,7 +4,6 @@ module Struct.Helpers where
 import Struct.Exprs
 import Util.Helpers ( fsts, snds )
 import Data.List ( sortBy )
-import Debug.Trace ( trace )
 
 -- Gets the type of an elaborated term in O(1) time
 typeof :: Term -> Type
@@ -208,19 +207,18 @@ tmSuccName = TmN "Succ"
 tpNat :: Type
 tpNat = TpData tpNatName [] []
 
-addition :: UsTm -> UsTm -> UsTm
-addition (UsVar val1) (UsVar val2) = trace "adding" UsLam val1 tpNat
+additionGenerator :: UsTm -> UsTm -> UsTm
+additionGenerator (UsVar val1) (UsVar val2) = UsLam val1 tpNat
   (UsLam val2 tpNat (UsCase (UsVar val1) [CaseUs (TmN "Zero") [] (UsVar val2),
---                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (addition (UsVar (TmV "m'")) (UsVar val2)))]))
-                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (UsVar val2))]))
-addition _ _ = UsFail NoTp
+                                          CaseUs (TmN "Succ") [TmV "m'"] (UsApp (UsVar (TmV "Succ")) (UsApp (UsApp (UsVar (tmNameToVar tmAddName)) (UsVar (TmV "m'"))) (UsVar val2)))]))
+additionGenerator _ _ = UsFail NoTp
 
 builtins :: [UsProg]
 builtins = [
   UsProgData tpZeroName [] [],
   UsProgData tpBoolName [] [Ctor tmFalseName [], Ctor tmTrueName []],
   UsProgData tpNatName [] [Ctor tmZeroName [], Ctor tmSuccName [tpNat]],
-  UsProgDefine tmAddName (addition (UsVar (TmV "m")) (UsVar (TmV "n"))) (TpArr tpNat tpAdd) -- aka function tpNat -> (tpNat -> tpNat)
+  UsProgDefine tmAddName (additionGenerator (UsVar (TmV "m")) (UsVar (TmV "n"))) (TpArr tpNat tpAdd)
   ]
 
 progBuiltins :: UsProgs -> UsProgs
@@ -232,4 +230,4 @@ joinUsLams :: [TmVar] -> UsTm -> UsTm
 joinUsLams xs tail =
   case xs of
     x:xs -> UsLam x NoTp (joinUsLams xs tail)
-    [] -> tail 
+    [] -> tail

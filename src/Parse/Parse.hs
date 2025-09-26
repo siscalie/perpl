@@ -18,7 +18,6 @@ module Parse.Parse where
 import Parse.Lex
 import Struct.Lib
 import Util.Helpers (enumerate)
-import Debug.Trace ( trace )
 
 -- Throws a parser error message (s) at a certain position (p)
 parseErr' p s = Left (p, s)

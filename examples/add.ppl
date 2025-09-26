@@ -4,5 +4,5 @@ define even = \n. case n of
   | Zero -> True
   | Succ n' -> not (even n');
 
-define random = amb (factor 0.5 in 1) (factor 0.5 in 3+1);
+define random = amb (factor 0.5 in 1) (factor 0.5 in (3+1)+6);
 even random
