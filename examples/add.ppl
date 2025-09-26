@@ -1,6 +1,10 @@
 define equals m n =
   case m of
-    Zero -> (case n of Zero -> True | Succ _ -> False)
-    | Succ m' -> (case n of Zero -> False | Succ n' -> equals m' n');
+    0 -> (case n of
+            0 -> True
+            | n' + 1 -> False)
+    | m' + 1 -> (case n of
+                   0 -> False
+                  | n' + 1 -> equals m' n')
 
-equals (3 + 4) 7
+equals (2 + 3) 5
