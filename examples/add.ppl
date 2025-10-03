@@ -1,8 +1,9 @@
-define not = \ a. if a then False else True;
+define equal = \m. \n. case m of
+  | Zero -> (case n of
+    | Zero -> True
+    | Succ n' -> False)
+  | Succ m' -> (case n of
+    | Zero -> False
+    | Succ n' -> equal m' n');
 
-define is_even m =
-  case m of
-    0 -> True
-    | 1 + m' -> not (is_even m');
-
-is_even 1
+equal (2 + 3) 5

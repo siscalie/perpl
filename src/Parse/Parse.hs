@@ -139,14 +139,12 @@ parseVarsCommas close allow0 allow1 = parsePeeks 2 >>= \ ts -> case ts of
 parseCase :: ParseM CaseUs
 parseCase = parsePeek >>= \ t -> case t of
   TkNat 0 -> parseEat *> pure (CaseUs tmZeroName . map TmV) <*> parseVars <* parseDrop TkArr <*> parseTerm1
-  TkNat 1 -> parseEat *> (
+  TkNat n -> parseEat *> (
     parsePeeks 2 >>= \ j -> case j of
-      -- if we see + var, eat the +, eat the TkVar, eval the variable's value+1
-      [TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (TmN c) . map TmV)
-      -- else let's treat this just as a 1
-      _ -> pure (CaseUs (TmN "Succ Zero") . map TmV)
-      --_ -> parseEat *> pure (CaseUs (TmN (unpackNat 1)) . map TmV)
-    ) <*> parseVars <* parseDrop TkArr <*> parseTerm1
+      --[TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (TmN c) . map TmV) <*> parseVars
+      [TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (UsApp (UsApp (UsVar (tmNameToVar tmAddName)) n) c) . map TmV) <*> parseVars
+      _ -> parseEat *> pure (CaseUs (unpackNat n) . map TmV) <*> parseVars
+    ) <* parseDrop TkArr <*> parseTerm1
   
   TkVar c -> parseEat *> (
     parsePeeks 2 >>= \ i -> case i of
