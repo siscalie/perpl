@@ -156,15 +156,6 @@ parseCase = parsePeek >>= \ t -> case t of
       _ -> pure (CaseUs (TmN c) . map TmV)
    ) <*> parseVars <* parseDrop TkArr <*> parseTerm1
     -- it's like the c would be "Succ" and then we would parseVars on the m' or n' or whatever the variable is
-  TkNat 0 -> parseEat *> pure (CaseUs (TmN "Zero") . map TmV) <*> parseVars <* parseDrop TkArr <*> parseTerm1
-  -- if we see a 1, eat the TkNat, eat the 1
-  -- let's work on this one first, the 1 + n' may be easier than the n' + 1
-  TkNat 1 -> parseEat *> parseEat *> (
-    parsePeeks 2 >>= \ j -> case j of
-      -- if we see + var, eat the +, eat the TkVar, eval the variable's value+1
-      [TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (TmN c) . map TmV)
-      _ -> parseEat *> pure (CaseUs (TmN "Succ") . map TmV)
-    ) <*> parseVars <* parseDrop TkArr <*> parseTerm1
   _ -> parseErr "expecting a case"
 
 -- Parse one or more branches of a case expression.
