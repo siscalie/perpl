@@ -232,7 +232,7 @@ Currently the only term that can have a type annotation is "fail".
 parseTerm2 :: ParseM UsTm
 parseTerm2 = parseTerm3 >>= \ tm ->
   case tm of
-    UsFail NoTp -> pure UsFail <*> parseTpAnn
+    UsFail -> pure UsFail
     _ -> return tm
 
 
@@ -320,7 +320,7 @@ parseTerm5 = parsePeek >>= \ t -> case t of
         TkRangle -> pure (UsProd Additive [])
         _ -> pure (UsProd Additive) <*> (parseTerm1 >>= \ tm -> parseDelim parseTerm1 TkComma [tm])) <* parseDrop TkRangle
   TkNat n -> parseEat *> pure (unpackNat n)
-  TkFail -> parseEat *> pure (UsFail NoTp)
+  TkFail -> parseEat *> pure UsFail
   _ -> parseErr "couldn't parse a term here; perhaps add parentheses?"
 
 -- Unpack a natural number into a series of successors

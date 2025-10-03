@@ -239,6 +239,8 @@ instance Substitutable Term where
     pure TmElimMultiplicative <*> substM ptm <**> substParams ps (substM tm) <*> substM tp
   substM (TmEqs tms) =
     pure TmEqs <*> substM tms
+  substM TmFail =
+    pure TmFail
   
   freeVars (TmVarL x tp) = mempty{freeTmVars = Map.singleton x tp}
   freeVars (TmVarG g x tgs tis as tp) = freeVars tgs <> freeVars tis <> freeVars (fsts as)
@@ -302,8 +304,8 @@ instance Substitutable UsTm where
     pure UsFactorNat <*> pure wt <*> substM tm
   substM (UsFactorRatio wt tm) =
     pure UsFactorRatio <*> pure wt <*> substM tm
-  substM (UsFail tp) =
-    pure UsFail <*> substM tp
+  substM UsFail =
+    pure UsFail
   substM (UsProd am tms) =
     pure (UsProd am) <*> substM tms
   substM (UsElimMultiplicative tm xs tm') =
@@ -339,7 +341,7 @@ instance Substitutable UsTm where
     freeVars tm
   freeVars (UsFactorRatio wt tm) =
     freeVars tm
-  freeVars (UsFail tp) =
+  freeVars UsFail =
     mempty
 --  freeVars (UsElimAmp tm o) =
 --    freeVars tm

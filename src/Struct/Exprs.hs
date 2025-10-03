@@ -87,7 +87,7 @@ data UsTm =
   | UsFactorDouble Double UsTm             -- factor wt in tm (if wt is not a natural number)
   | UsFactorNat Int UsTm                   -- factor wt in tm (if wt is a natural number)
   | UsFactorRatio Rational UsTm            -- factor wt in tm (if wt is a rational number)
-  | UsFail Type                            -- fail : tp
+  | UsFail                                 -- fail : tp
   | UsProd AddMult [UsTm]                  -- (tm1, ..., tmn)/<tm1, ..., tmn>
   | UsElimMultiplicative UsTm [TmVar] UsTm -- let (x,y,z) = tm1 in tm2
   | UsElimAdditive UsTm Int Int TmVar UsTm -- let <_,y,_> = tm1 in tm2
@@ -116,6 +116,7 @@ data Term =
   | TmElimMultiplicative Term [Param] Term Type   -- let (x:X,y:Y,z:Z) = tm1 in tm2 : tp
   | TmElimAdditive Term Int Int Param Term Type   -- let <_..,y:Y,_..> = tm1 in tm2 : tp
   | TmEqs [Term]                                  -- tm1 == tm2 == ...
+  | TmFail
   deriving (Eq, Ord)
 
 data AddMult = Additive | Multiplicative

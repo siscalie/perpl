@@ -384,9 +384,8 @@ infer' (UsFactorNat wt tm) =
 infer' (UsFactorRatio wt tm) =
   infer tm >>= \ tm' -> return (TmFactorRatio wt tm' (typeof tm'))
 
-infer' (UsFail tp) =
-  annTp tp >>= \ tp' ->
-  return (TmAmb [] tp')
+infer' UsFail =
+  return TmFail
 
 infer' (UsProd am tms) =
   mapM infer tms >>= \ tms' ->
