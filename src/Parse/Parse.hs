@@ -141,9 +141,8 @@ parseCase = parsePeek >>= \ t -> case t of
   TkNat 0 -> parseEat *> pure (CaseUs tmZeroName . map TmV) <*> parseVars <* parseDrop TkArr <*> parseTerm1
   TkNat n -> parseEat *> (
     parsePeeks 2 >>= \ j -> case j of
-      --[TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (TmN c) . map TmV) <*> parseVars
-      [TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (UsApp (UsApp (UsVar (tmNameToVar tmAddName)) n) c) . map TmV) <*> parseVars
-      _ -> parseEat *> pure (CaseUs (unpackNat n) . map TmV) <*> parseVars
+      [TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (TmN (show (UsApp (UsApp (UsVar (tmNameToVar tmAddName)) (unpackNat n)) ((UsVar (TmV c)))))) . map TmV) <*> parseVars
+      _ -> parseEat *> pure (CaseUs (TmN (show (unpackNat n))) . map TmV) <*> parseVars
     ) <* parseDrop TkArr <*> parseTerm1
   
   TkVar c -> parseEat *> (
