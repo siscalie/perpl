@@ -1,11 +1,8 @@
-define equals m n =
+define not = \ a. if a then False else True;
+
+define is_even m =
   case m of
-    Zero -> (case n of Zero -> True | Succ _ -> False)
-    | Succ m' -> (case n of Zero -> False | Succ n' -> equals m' n');
+    0 -> True
+    | 1 + m' -> not (is_even m');
 
--- older version of what nat's in switch cases were like
---define plus = \m. \n. case m of
---  | Zero -> n
---  | Succ m' -> Succ (plus m' n);
-
-equals (2 + 3) 5
+is_even 1

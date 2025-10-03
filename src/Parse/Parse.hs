@@ -138,13 +138,23 @@ parseVarsCommas close allow0 allow1 = parsePeeks 2 >>= \ ts -> case ts of
 -- Parse a branch of a case expression.
 parseCase :: ParseM CaseUs
 parseCase = parsePeek >>= \ t -> case t of
+  TkNat 0 -> parseEat *> pure (CaseUs tmZeroName . map TmV) <*> parseVars <* parseDrop TkArr <*> parseTerm1
+  TkNat 1 -> parseEat *> (
+    parsePeeks 2 >>= \ j -> case j of
+      -- if we see + var, eat the +, eat the TkVar, eval the variable's value+1
+      [TkAdd, TkVar c] -> parseEat *> parseEat *> pure (CaseUs (TmN c) . map TmV)
+      -- else let's treat this just as a 1
+      _ -> pure (CaseUs (TmN "Succ Zero") . map TmV)
+      --_ -> parseEat *> pure (CaseUs (TmN (unpackNat 1)) . map TmV)
+    ) <*> parseVars <* parseDrop TkArr <*> parseTerm1
+  
   TkVar c -> parseEat *> (
     parsePeeks 2 >>= \ i -> case i of
       -- if we see + 1, eat the +, eat the TkNat, eat the 1, then eval the variable's value+1
-      [TkAdd, TkNat 1] -> parseEat *> parseEat *> parseEat *> pure (CaseUs (TmN c) . map TmV)
+      [TkAdd, TkNat 1] -> parseEat *> parseEat *> pure (CaseUs (TmN c) . map TmV)
       -- if we don't see a + 1, treat as a normal variable
       _ -> pure (CaseUs (TmN c) . map TmV)
-    ) <*> parseVars <* parseDrop TkArr <*> parseTerm1
+   ) <*> parseVars <* parseDrop TkArr <*> parseTerm1
     -- it's like the c would be "Succ" and then we would parseVars on the m' or n' or whatever the variable is
   TkNat 0 -> parseEat *> pure (CaseUs (TmN "Zero") . map TmV) <*> parseVars <* parseDrop TkArr <*> parseTerm1
   -- if we see a 1, eat the TkNat, eat the 1
