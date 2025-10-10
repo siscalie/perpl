@@ -6,7 +6,7 @@ import Data.String (IsString(fromString))
 
 {- The program goes through three stages:
 
-1. The parser produces a user-level program (UsProgs, UsTm, UsTp).
+1. The parser produces a user-level program (UsProgs, UsTm).
 2. Type inference turns it into a scheme-ified program (SProgs, Term, Type).
 3. Monomorphization turns into an elaborated program (Progs, Term, Type). -}
 
