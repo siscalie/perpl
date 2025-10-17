@@ -138,7 +138,22 @@ parseVarsCommas close allow0 allow1 = parsePeeks 2 >>= \ ts -> case ts of
 -- Parse a branch of a case expression.
 parseCase :: ParseM CaseUs
 parseCase = parsePeek >>= \ t -> case t of
-  TkVar c -> parseEat *> pure (CaseUs (TmN c) . map TmV) <*> parseVars <* parseDrop TkArr <*> parseTerm1
+  TkNat 0 -> parseEat *> pure (CaseUs tmZeroName . map TmV) <*> parseVars <* parseDrop TkArr <*> parseTerm1
+  TkNat 1 -> parseEat *> (
+    parsePeeks 2 >>= \ j -> case j of
+      [TkAdd, TkVar n] -> do
+        parseEat
+        parseEat
+        pure (CaseUs tmSuccName [TmV n])
+      _ -> parseErr "Cases must be of the form <constructor> <var>*, 0, 1+<var>, or <var>+1 only"
+    ) <* parseDrop TkArr <*> parseTerm1
+  TkVar x -> parseEat *> (
+    parsePeeks 2 >>= \ i -> case i of
+      -- if we see + 1, eat the +, eat the TkNat, eat the 1, then eval the variable's value+1
+      [TkAdd, TkNat 1] -> parseEat *> parseEat *> pure (CaseUs tmSuccName [TmV x])
+      -- if we don't see a + 1, treat as a normal variable
+      _ -> pure (CaseUs (TmN x) . map TmV) <*> parseVars
+   ) <* parseDrop TkArr <*> parseTerm1
   _ -> parseErr "expecting a case"
 
 -- Parse one or more branches of a case expression.

@@ -1,6 +1,9 @@
-define equals m n =
-  case m of
-    Zero -> (case n of Zero -> True | Succ _ -> False)
-    | Succ m' -> (case n of Zero -> False | Succ n' -> equals m' n');
+define equal = \m. \n. case m of
+  | Zero -> (case n of
+    | Zero -> True
+    | Succ n' -> False)
+  | Succ m' -> (case n of
+    | Zero -> False
+    | Succ n' -> equal m' n');
 
-equals (3 + 4) 7
+equal (2 + 3) 5
