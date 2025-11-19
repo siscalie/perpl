@@ -132,7 +132,7 @@ processContents (CmdArgs ifn ofn t m e dr l o z p si) s =
   -- Add Bool, True, False
   >>= Right . progBuiltins
   --  De-sugar any nesting (in lambda's, let's, case's)
-  >> desugar
+  >>= desugar
   -- Type check the file (:: UsProgs -> Progs)
   >>= infer
   >>= if not t then return . show else (\ x -> (Right . monomorphizeFile) x

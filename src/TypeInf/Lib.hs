@@ -1,4 +1,4 @@
-module TypeInf.Lib (infer) where
+module TypeInf.Lib (infer, desugar) where
 import TypeInf.Solve (inferFile)
 import TypeInf.Desugar (desugarFile)
 import Struct.Lib (UsProgs, SProgs)
