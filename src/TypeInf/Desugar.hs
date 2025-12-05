@@ -43,12 +43,31 @@ also RECALL these definitions:
 3. data Case = Case TmName [Param] Term     -- | x (a1 : tp1) ... (an : tpn) -> tm
 -}
 
+-- Lookup a datatype
+lookupDatatype' :: TpName -> ([Tag], [TpVar], [Ctor])
+lookupDatatype' x =
+  ask >>= (\ g ->
+  case Map.lookup x (tpNames g) of
+    Just (CtData tgs ps cs) -> (tgs, ps, cs)
+    _ -> ask >>= (\ loc -> throwError (ScopeError (show x), loc)) . checkLoc) . checkEnv
+
+-- Lookup the datatype that cases split on
+lookupCtorType' :: [CaseUs] -> (TpName, [Tag], [TpVar], [Ctor])
+lookupCtorType' [] = ask >>= (\ loc -> throwError (NoCases, loc)) . checkLoc
+lookupCtorType' (CaseUs x _ _ : _) =
+  ask >>= (\ d ->
+  case d of
+    Just (CtCtor _ _ ctp) -> case splitArrows ctp of
+      (_, TpData y _ _) -> let (tgs, xs, cs) = lookupDatatype' y in (y, tgs, xs, cs)
+      (_, etp) -> error "This shouldn't happen"
+    _ -> ask >>= (\ loc -> throwError (CtorError x, loc)) . checkLoc) . fmap (Map.lookup x . tmNames) checkEnv
+
 -- Infers/checks a term, elaborating it from a user-term (UsTm) to a full Term
 desugar' :: UsTm -> UsTm
 desugar' (UsCase tm cs) =
   -- (CALCULATES the missing cases by running lookupCtorType to get the constructors this type is supposed to have)
   -- (EX: can deduce that a List is either a Nil or a Cons)
-  lookupCtorType cs >>= \ (y, tgs, ps, ctors) -> -- lookup the datatype we have cases for
+  lookupCtorType' cs >>= \ (y, tgs, ps, ctors) -> -- lookup the datatype we have cases for
   let missingCases = listDifference [y | (Ctor y _) <- ctors] [x | (CaseUs x _ _) <- cs] in -- here we're saying that missing cases = ctors - cases
   guardM (null missingCases) (MissingCases missingCases) >> -- guard against missing cases
   guardM (length ctors == length cs) (WrongNumCases (length ctors) (length cs)) >> -- guard against wrong # of cases
