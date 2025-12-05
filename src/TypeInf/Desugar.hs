@@ -18,7 +18,7 @@ import Struct.Helpers
 import TypeInf.Check
 import TypeInf.Solve
 import Util.Graph (scc, SCC(..))
-import Util.Helpers (listDifference, pickyZip)
+import Util.Helpers ( listDifference, okay )
 
 {-
 Let's de-sugar in a new mini-phase!
@@ -42,6 +42,11 @@ also RECALL these definitions:
 2. data CaseUs = CaseUs TmName [TmVar] UsTm -- | x a1 ... an -> tm
 3. data Case = Case TmName [Param] Term     -- | x (a1 : tp1) ... (an : tpn) -> tm
 -}
+
+-- If false, throw error e
+guardM' :: Bool -> TypeError -> a 
+guardM' True e = ()
+guardM' False e = ask >>= (\ loc -> throwError (e, loc)) . checkLoc
 
 -- Lookup a datatype
 lookupDatatype' :: TpName -> ([Tag], [TpVar], [Ctor])
@@ -67,11 +72,11 @@ desugar' :: UsTm -> UsTm
 desugar' (UsCase tm cs) =
   -- (CALCULATES the missing cases by running lookupCtorType to get the constructors this type is supposed to have)
   -- (EX: can deduce that a List is either a Nil or a Cons)
-  lookupCtorType' cs >>= \ (y, tgs, ps, ctors) -> -- lookup the datatype we have cases for
-  let missingCases = listDifference [y | (Ctor y _) <- ctors] [x | (CaseUs x _ _) <- cs] in -- here we're saying that missing cases = ctors - cases
-  guardM (null missingCases) (MissingCases missingCases) >> -- guard against missing cases
-  guardM (length ctors == length cs) (WrongNumCases (length ctors) (length cs)) >> -- guard against wrong # of cases
-  return (UsCase tm cs)
+  let (y, tgs, ps, ctors) = lookupCtorType' cs in -- lookup the datatype we have cases for
+    let missingCases = listDifference [y | (Ctor y _) <- ctors] [x | (CaseUs x _ _) <- cs] in -- here we're saying that missing cases = ctors - cases
+      guardM' (null missingCases) (MissingCases missingCases) >> -- guard against missing cases
+      guardM' (length ctors == length cs) (WrongNumCases (length ctors) (length cs)) >> -- guard against wrong # of cases
+      return (UsCase tm cs)
 
 termToProg :: UsTm -> UsProgs
 termToProg = UsProgs []
